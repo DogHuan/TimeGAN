@@ -2,6 +2,9 @@
 import torch
 import numpy as np
 
+from models.CNN import Dis_CNN
+
+
 class EmbeddingNetwork(torch.nn.Module):
     """The embedding network (encoder) for TimeGAN
     """
@@ -309,11 +312,17 @@ class DiscriminatorNetwork(torch.nn.Module):
         self.max_seq_len = args.max_seq_len
 
         # Discriminator Architecture
-        self.dis_rnn = torch.nn.GRU(
-            input_size=self.hidden_dim, 
-            hidden_size=self.hidden_dim, 
-            num_layers=self.num_layers, 
-            batch_first=True
+        # self.dis_rnn = torch.nn.GRU(
+        #     input_size=self.hidden_dim,
+        #     hidden_size=self.hidden_dim,
+        #     num_layers=self.num_layers,
+        #     batch_first=True
+        # )
+        self.dis_cnn = Dis_CNN(
+            input_size=self.hidden_dim,
+            hidden_size=self.hidden_dim,
+            num_layers=self.num_layers,
+            output_size=self.hidden_dim
         )
         self.dis_linear = torch.nn.Linear(self.hidden_dim, 1)
 
@@ -323,7 +332,7 @@ class DiscriminatorNetwork(torch.nn.Module):
         # - https://www.tensorflow.org/api_docs/python/tf/compat/v1/get_variable
         # - https://github.com/tensorflow/tensorflow/blob/v2.3.1/tensorflow/python/keras/layers/legacy_rnn/rnn_cell_impl.py#L484-L614
         with torch.no_grad():
-            for name, param in self.dis_rnn.named_parameters():
+            for name, param in self.dis_cnn.named_parameters():
                 if 'weight_ih' in name:
                     torch.nn.init.xavier_uniform_(param.data)
                 elif 'weight_hh' in name:
@@ -355,7 +364,7 @@ class DiscriminatorNetwork(torch.nn.Module):
         )
         
         # 128 x 100 x 10
-        H_o, H_t = self.dis_rnn(H_packed)
+        H_o, H_t = self.dis_cnn(H_packed)
         
         # Pad RNN output back to sequence length
         H_o, T = torch.nn.utils.rnn.pad_packed_sequence(
