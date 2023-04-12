@@ -319,7 +319,7 @@ class DiscriminatorNetwork(torch.nn.Module):
         #     batch_first=True
         # )
         self.dis_cnn = Dis_CNN(
-            input_size=self.hidden_dim,
+            input_size=self.max_seq_len,
             hidden_size=self.hidden_dim,
             num_layers=self.num_layers,
             output_size=self.hidden_dim
@@ -356,23 +356,23 @@ class DiscriminatorNetwork(torch.nn.Module):
             - logits: predicted logits (B x S x 1)
         """
         # Dynamic RNN input for ignoring paddings
-        H_packed = torch.nn.utils.rnn.pack_padded_sequence(
-            input=H, 
-            lengths=T, 
-            batch_first=True, 
-            enforce_sorted=False
-        )
+        # H_packed = torch.nn.utils.rnn.pack_padded_sequence(
+        #     input=H,
+        #     lengths=T,
+        #     batch_first=True,
+        #     enforce_sorted=False
+        # )
         
         # 128 x 100 x 10
-        H_o, H_t = self.dis_cnn(H_packed)
+        H_o = self.dis_cnn(H)
         
         # Pad RNN output back to sequence length
-        H_o, T = torch.nn.utils.rnn.pad_packed_sequence(
-            sequence=H_o, 
-            batch_first=True,
-            padding_value=self.padding_value,
-            total_length=self.max_seq_len
-        )
+        # H_o, T = torch.nn.utils.rnn.pad_packed_sequence(
+        #     sequence=H_o,
+        #     batch_first=True,
+        #     padding_value=self.padding_value,
+        #     total_length=self.max_seq_len
+        # )
 
         # 128 x 100
         logits = self.dis_linear(H_o).squeeze(-1)

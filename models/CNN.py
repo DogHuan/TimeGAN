@@ -42,7 +42,7 @@ class Dis_CNN(nn.Module):
         self.conv4 = nn.Conv1d(hidden_size * 4, hidden_size * 8, kernel_size=3, stride=2, padding=1)
         self.bn4 = nn.BatchNorm1d(hidden_size * 8)
         self.relu4 = nn.LeakyReLU(0.2)
-        self.fc = nn.Linear(hidden_size * 8, output_size)
+        # self.fc = nn.Linear(hidden_size * 8, output_size)
 
     def forward(self, x):
         x = self.conv1(x)
@@ -57,6 +57,6 @@ class Dis_CNN(nn.Module):
         x = self.bn4(x)
         x = self.relu4(x)
         x = x.view(x.size(0), -1)
-        x = self.fc(x)
+        # x = self.fc(x)
         return x
 
