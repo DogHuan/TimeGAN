@@ -310,6 +310,7 @@ class DiscriminatorNetwork(torch.nn.Module):
         self.num_layers = args.num_layers
         self.padding_value = args.padding_value
         self.max_seq_len = args.max_seq_len
+        self.batch_size = args.batch_size
 
         # Discriminator Architecture
         # self.dis_rnn = torch.nn.GRU(
@@ -319,10 +320,9 @@ class DiscriminatorNetwork(torch.nn.Module):
         #     batch_first=True
         # )
         self.dis_cnn = Dis_CNN(
-            input_size=self.max_seq_len,
-            hidden_size=self.hidden_dim,
-            num_layers=self.num_layers,
-            output_size=self.hidden_dim
+            in_channels=self.max_seq_len,
+            out_channels=self.hidden_dim,
+            # num_layers=self.num_layers,
         )
         self.dis_linear = torch.nn.Linear(self.hidden_dim, 1)
 
@@ -377,6 +377,7 @@ class DiscriminatorNetwork(torch.nn.Module):
         # 128 x 100
         logits = self.dis_linear(H_o).squeeze(-1)
         return logits
+        # return H_o
 
 class TimeGAN(torch.nn.Module):
     """Implementation of TimeGAN (Yoon et al., 2019) using PyTorch
