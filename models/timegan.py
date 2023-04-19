@@ -319,10 +319,12 @@ class DiscriminatorNetwork(torch.nn.Module):
         #     num_layers=self.num_layers,
         #     batch_first=True
         # )
+        # 注意力机制
+        self.dis_attn_linear = torch.nn.Linear(self.hidden_dim, self.hidden_dim * 3)
+        self.dis_attn = torch.nn.MultiheadAttention(self.hidden_dim, 1)
         self.dis_cnn = Dis_CNN(
             in_channels=self.max_seq_len,
             out_channels=self.hidden_dim,
-            # num_layers=self.num_layers,
         )
         self.dis_linear = torch.nn.Linear(self.hidden_dim, 1)
 
@@ -362,10 +364,19 @@ class DiscriminatorNetwork(torch.nn.Module):
         #     batch_first=True,
         #     enforce_sorted=False
         # )
-        
+        dis_cnn_lin = self.dis_attn_linear(H)
+        cnn_q, cnn_k, cnn_v = dis_cnn_lin[:, :, :H.shape[-1]],\
+                   dis_cnn_lin[:, :, H.shape[-1]:H.shape[-1]*2],\
+                   dis_cnn_lin[:, :, H.shape[-1]*2:],
+        dis_attn_output, dis_attn_weight = self.dis_attn(cnn_q, cnn_k, cnn_v)
         # 128 x 100 x 10
-        H_o = self.dis_cnn(H)
-        
+        # 注意力机制
+        # q, k, v = logits[:, :, :H_o.shape[-1]], \
+        #           logits[:, :, H_o.shape[-1]:H_o.shape[-1]*2],\
+        #           logits[:, :, H_o.shape[-1]*2:]
+        # attn_output, attn_weight = self.gen_attn(q, k, v)
+        H_o = self.dis_cnn(dis_attn_output)
+
         # Pad RNN output back to sequence length
         # H_o, T = torch.nn.utils.rnn.pad_packed_sequence(
         #     sequence=H_o,
@@ -375,7 +386,13 @@ class DiscriminatorNetwork(torch.nn.Module):
         # )
 
         # 128 x 100
-        logits = self.dis_linear(H_o).squeeze(-1)
+        dis_lin = self.dis_attn_linear(H_o)
+        q, k, v = dis_lin[:, :, :H_o.shape[-1]], \
+                  dis_lin[:, :, H_o.shape[-1]:H_o.shape[-1] * 2], \
+                  dis_lin[:, :, H_o.shape[-1] * 2:]
+        H_attn_output, H_attn_weight = self.dis_attn(q, k, v)
+        logits = self.dis_linear(H_attn_output).squeeze(-1)
+
         return logits
         # return H_o
 
