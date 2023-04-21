@@ -14,8 +14,9 @@ import torch
 import joblib
 from sklearn.model_selection import train_test_split
 
-# Self-Written Modules
 from data.data_preprocess import data_preprocess
+# Self-Written Modules
+
 from metrics.metric_utils import (
     feature_prediction, one_step_ahead_prediction, reidentify_score
 )
@@ -80,7 +81,7 @@ def main(args):
     # Load and preprocess data for model
     #########################
 
-    data_path = "data/stock.csv"
+    data_path = "data/000001SZ.csv"
     X, T, _, args.max_seq_len, args.padding_value = data_preprocess(
         data_path, args.max_seq_len
     )
