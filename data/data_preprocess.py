@@ -60,12 +60,11 @@ def data_preprocess(
     # Load data
     #########################
 
-    index = 'Idx'
+    index = 'idx'
 
     # Load csv
     print("Loading data...\n")
     ori_data = pd.read_csv(file_name)
-    ori_data.drop('ts_code', axis=1, inplace=True)  # 删除第二列’股票代码‘
     ori_data.drop('trade_date', axis=1, inplace=True)  # 删除列’pre_close‘
 
     # Remove spurious column, so that column 0 is now 'admissionid'.
