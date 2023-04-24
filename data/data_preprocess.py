@@ -60,7 +60,7 @@ def data_preprocess(
     # Load data
     #########################
 
-    index = 'idx'
+    index = 'Idx'
 
     # Load csv
     print("Loading data...\n")
@@ -68,8 +68,8 @@ def data_preprocess(
     ori_data.drop('trade_date', axis=1, inplace=True)  # 删除列’pre_close‘
 
     # Remove spurious column, so that column 0 is now 'admissionid'.
-    # if ori_data.columns[0] == "Unnamed: 0":
-    #     ori_data = ori_data.drop(["Unnamed: 0"], axis=1)
+    if ori_data.columns[0] == "Unnamed: 0":
+        ori_data = ori_data.drop(["Unnamed: 0"], axis=1)
 
     #########################
     # Remove outliers from dataset
