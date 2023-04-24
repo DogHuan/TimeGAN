@@ -44,7 +44,7 @@ class Dis_CNN(nn.Module):
         self.bn2 = nn.BatchNorm1d(out_channels)
         self.relu2 = nn.LeakyReLU(0.2)
         self.conv3 = nn.Conv1d(out_channels, out_channels, kernel_size=3, stride=1, padding=1)
-        self.bn3 = nn.BatchNorm1d(out_channels * 5)
+        self.bn3 = nn.BatchNorm1d(out_channels)
         self.relu3 = nn.LeakyReLU(0.2)
 
     def forward(self, x):

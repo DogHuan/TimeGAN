@@ -370,12 +370,8 @@ class DiscriminatorNetwork(torch.nn.Module):
                    dis_cnn_lin[:, :, H.shape[-1]*2:],
         dis_attn_output, dis_attn_weight = self.dis_attn(cnn_q, cnn_k, cnn_v)
         # 128 x 100 x 10
-        # 注意力机制
-        # q, k, v = logits[:, :, :H_o.shape[-1]], \
-        #           logits[:, :, H_o.shape[-1]:H_o.shape[-1]*2],\
-        #           logits[:, :, H_o.shape[-1]*2:]
-        # attn_output, attn_weight = self.gen_attn(q, k, v)
         H_o = self.dis_cnn(dis_attn_output)
+        # H_o, H_t = self.dis_rnn(H_packed)
 
         # Pad RNN output back to sequence length
         # H_o, T = torch.nn.utils.rnn.pad_packed_sequence(
@@ -386,12 +382,14 @@ class DiscriminatorNetwork(torch.nn.Module):
         # )
 
         # 128 x 100
+        # 注意力机制
         dis_lin = self.dis_attn_linear(H_o)
         q, k, v = dis_lin[:, :, :H_o.shape[-1]], \
                   dis_lin[:, :, H_o.shape[-1]:H_o.shape[-1] * 2], \
                   dis_lin[:, :, H_o.shape[-1] * 2:]
         H_attn_output, H_attn_weight = self.dis_attn(q, k, v)
         logits = self.dis_linear(H_attn_output).squeeze(-1)
+        # logits = self.dis_linear(H_o).squeeze(-1)
 
         return logits
         # return H_o

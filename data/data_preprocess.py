@@ -60,12 +60,12 @@ def data_preprocess(
     # Load data
     #########################
 
-    index = 'Idx'
+    index = 'idx'
 
     # Load csv
     print("Loading data...\n")
     ori_data = pd.read_csv(file_name)
-    ori_data.drop('trade_date', axis=1, inplace=True)  # 删除列’pre_close‘
+    # ori_data.drop('trade_date', axis=1, inplace=True)  # 删除列’pre_close‘
 
     # Remove spurious column, so that column 0 is now 'admissionid'.
     if ori_data.columns[0] == "Unnamed: 0":
@@ -76,10 +76,10 @@ def data_preprocess(
     #########################
     
     no = ori_data.shape[0]
-    z_scores = stats.zscore(ori_data, axis=0, nan_policy='omit')
-    z_filter = np.nanmax(np.abs(z_scores), axis=1) < 3
-    ori_data = ori_data[z_filter]
-    print(f"Dropped {no - ori_data.shape[0]} rows (outliers)\n")
+    # z_scores = stats.zscore(ori_data, axis=0, nan_policy='omit')
+    # z_filter = np.nanmax(np.abs(z_scores), axis=1) < 3
+    # ori_data = ori_data[z_filter]
+    # print(f"Dropped {no - ori_data.shape[0]} rows (outliers)\n")
 
     # Parameters
     uniq_id = np.unique(ori_data[index])
