@@ -4,7 +4,6 @@ import numpy as np
 
 from models.CNN import Dis_CNN
 
-
 class EmbeddingNetwork(torch.nn.Module):
     """The embedding network (encoder) for TimeGAN
     """
@@ -13,7 +12,7 @@ class EmbeddingNetwork(torch.nn.Module):
         self.feature_dim = args.feature_dim
         self.hidden_dim = args.hidden_dim
         self.num_layers = args.num_layers
-        self.padding_value = args.padding_value
+        # self.padding_value = args.padding_value
         self.max_seq_len = args.max_seq_len
 
         # Embedder Architecture
@@ -70,7 +69,7 @@ class EmbeddingNetwork(torch.nn.Module):
         H_o, T = torch.nn.utils.rnn.pad_packed_sequence(
             sequence=H_o, 
             batch_first=True,
-            padding_value=self.padding_value,
+            # padding_value=self.padding_value,
             total_length=self.max_seq_len
         )
         
@@ -88,7 +87,7 @@ class RecoveryNetwork(torch.nn.Module):
         self.hidden_dim = args.hidden_dim
         self.feature_dim = args.feature_dim
         self.num_layers = args.num_layers
-        self.padding_value = args.padding_value
+        # self.padding_value = args.padding_value
         self.max_seq_len = args.max_seq_len
 
         # Recovery Architecture
@@ -144,7 +143,7 @@ class RecoveryNetwork(torch.nn.Module):
         H_o, T = torch.nn.utils.rnn.pad_packed_sequence(
             sequence=H_o, 
             batch_first=True,
-            padding_value=self.padding_value,
+            # padding_value=self.padding_value,
             total_length=self.max_seq_len
         )
 
@@ -159,7 +158,7 @@ class SupervisorNetwork(torch.nn.Module):
         super(SupervisorNetwork, self).__init__()
         self.hidden_dim = args.hidden_dim
         self.num_layers = args.num_layers
-        self.padding_value = args.padding_value
+        # self.padding_value = args.padding_value
         self.max_seq_len = args.max_seq_len
 
         # Supervisor Architecture
@@ -216,7 +215,7 @@ class SupervisorNetwork(torch.nn.Module):
         H_o, T = torch.nn.utils.rnn.pad_packed_sequence(
             sequence=H_o, 
             batch_first=True,
-            padding_value=self.padding_value,
+            # padding_value=self.padding_value,
             total_length=self.max_seq_len
         )
 
@@ -234,7 +233,7 @@ class GeneratorNetwork(torch.nn.Module):
         self.Z_dim = args.Z_dim
         self.hidden_dim = args.hidden_dim
         self.num_layers = args.num_layers
-        self.padding_value = args.padding_value
+        # self.padding_value = args.padding_value
         self.max_seq_len = args.max_seq_len
 
         # Generator Architecture
@@ -291,7 +290,7 @@ class GeneratorNetwork(torch.nn.Module):
         H_o, T = torch.nn.utils.rnn.pad_packed_sequence(
             sequence=H_o, 
             batch_first=True,
-            padding_value=self.padding_value,
+            # padding_value=self.padding_value,
             total_length=self.max_seq_len
         )
 
@@ -308,24 +307,24 @@ class DiscriminatorNetwork(torch.nn.Module):
         super(DiscriminatorNetwork, self).__init__()
         self.hidden_dim = args.hidden_dim
         self.num_layers = args.num_layers
-        self.padding_value = args.padding_value
+        # self.padding_value = args.padding_value
         self.max_seq_len = args.max_seq_len
         self.batch_size = args.batch_size
 
         # Discriminator Architecture
-        # self.dis_rnn = torch.nn.GRU(
-        #     input_size=self.hidden_dim,
-        #     hidden_size=self.hidden_dim,
-        #     num_layers=self.num_layers,
-        #     batch_first=True
-        # )
-        # 注意力机制
-        self.dis_attn_linear = torch.nn.Linear(self.hidden_dim, self.hidden_dim * 3)
-        self.dis_attn = torch.nn.MultiheadAttention(self.hidden_dim, 1)
-        self.dis_cnn = Dis_CNN(
-            in_channels=self.max_seq_len,
-            out_channels=self.hidden_dim,
+        self.dis_rnn = torch.nn.GRU(
+            input_size=self.hidden_dim,
+            hidden_size=self.hidden_dim,
+            num_layers=self.num_layers,
+            batch_first=True
         )
+        # 注意力机制
+        # self.dis_attn_linear = torch.nn.Linear(self.hidden_dim, self.hidden_dim * 3)
+        # self.dis_attn = torch.nn.MultiheadAttention(self.hidden_dim, 1)
+        # self.dis_cnn = Dis_CNN(
+        #     in_channels=self.max_seq_len,
+        #     out_channels=self.hidden_dim,
+        # )
         self.dis_linear = torch.nn.Linear(self.hidden_dim, 1)
 
         # Init weights
@@ -334,7 +333,7 @@ class DiscriminatorNetwork(torch.nn.Module):
         # - https://www.tensorflow.org/api_docs/python/tf/compat/v1/get_variable
         # - https://github.com/tensorflow/tensorflow/blob/v2.3.1/tensorflow/python/keras/layers/legacy_rnn/rnn_cell_impl.py#L484-L614
         with torch.no_grad():
-            for name, param in self.dis_cnn.named_parameters():
+            for name, param in self.dis_rnn.named_parameters():
                 if 'weight_ih' in name:
                     torch.nn.init.xavier_uniform_(param.data)
                 elif 'weight_hh' in name:
@@ -358,41 +357,40 @@ class DiscriminatorNetwork(torch.nn.Module):
             - logits: predicted logits (B x S x 1)
         """
         # Dynamic RNN input for ignoring paddings
-        # H_packed = torch.nn.utils.rnn.pack_padded_sequence(
-        #     input=H,
-        #     lengths=T,
-        #     batch_first=True,
-        #     enforce_sorted=False
-        # )
-        dis_cnn_lin = self.dis_attn_linear(H)
-        cnn_q, cnn_k, cnn_v = dis_cnn_lin[:, :, :H.shape[-1]],\
-                   dis_cnn_lin[:, :, H.shape[-1]:H.shape[-1]*2],\
-                   dis_cnn_lin[:, :, H.shape[-1]*2:],
-        dis_attn_output, dis_attn_weight = self.dis_attn(cnn_q, cnn_k, cnn_v)
-        # 128 x 100 x 10
-        H_o = self.dis_cnn(dis_attn_output)
-        # H_o, H_t = self.dis_rnn(H_packed)
+        H_packed = torch.nn.utils.rnn.pack_padded_sequence(
+            input=H,
+            lengths=T,
+            batch_first=True,
+            enforce_sorted=False
+        )
+        # dis_cnn_lin = self.dis_attn_linear(H)
+        # cnn_q, cnn_k, cnn_v = dis_cnn_lin[:, :, :H.shape[-1]],\
+        #            dis_cnn_lin[:, :, H.shape[-1]:H.shape[-1]*2],\
+        #            dis_cnn_lin[:, :, H.shape[-1]*2:],
+        # dis_attn_output, dis_attn_weight = self.dis_attn(cnn_q, cnn_k, cnn_v)
+        # # 128 x 100 x 10
+        # H_o = self.dis_cnn(dis_attn_output)
+        H_o, H_t = self.dis_rnn(H_packed)
 
         # Pad RNN output back to sequence length
-        # H_o, T = torch.nn.utils.rnn.pad_packed_sequence(
-        #     sequence=H_o,
-        #     batch_first=True,
-        #     padding_value=self.padding_value,
-        #     total_length=self.max_seq_len
-        # )
+        H_o, T = torch.nn.utils.rnn.pad_packed_sequence(
+            sequence=H_o,
+            batch_first=True,
+            # padding_value=self.padding_value,
+            total_length=self.max_seq_len
+        )
 
         # 128 x 100
         # 注意力机制
-        dis_lin = self.dis_attn_linear(H_o)
-        q, k, v = dis_lin[:, :, :H_o.shape[-1]], \
-                  dis_lin[:, :, H_o.shape[-1]:H_o.shape[-1] * 2], \
-                  dis_lin[:, :, H_o.shape[-1] * 2:]
-        H_attn_output, H_attn_weight = self.dis_attn(q, k, v)
-        logits = self.dis_linear(H_attn_output).squeeze(-1)
-        # logits = self.dis_linear(H_o).squeeze(-1)
+        # dis_lin = self.dis_attn_linear(H_o)
+        # q, k, v = dis_lin[:, :, :H_o.shape[-1]], \
+        #           dis_lin[:, :, H_o.shape[-1]:H_o.shape[-1] * 2], \
+        #           dis_lin[:, :, H_o.shape[-1] * 2:]
+        # H_attn_output, H_attn_weight = self.dis_attn(q, k, v)
+        # logits = self.dis_linear(H_attn_output).squeeze(-1)
+        logits = self.dis_linear(H_o).squeeze(-1)
 
         return logits
-        # return H_o
 
 class TimeGAN(torch.nn.Module):
     """Implementation of TimeGAN (Yoon et al., 2019) using PyTorch
