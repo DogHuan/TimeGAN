@@ -33,8 +33,8 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler
 def data_preprocess(
     file_name: str,
     max_seq_len: int,
-    padding_value: float=-1.0,
-    impute_method: str="mode",
+    padding_value: float = -1.0,
+    impute_method: str = "mode",
 ) -> Tuple[np.ndarray, np.ndarray, List]:
     """Load the data and preprocess into 3d numpy array.
     Preprocessing includes:
@@ -66,16 +66,14 @@ def data_preprocess(
     print("Loading data...\n")
 
     ori_data = pd.read_csv(file_name)
-    # Remove spurious column, so that column 0 is now 'admissionid'. 删除文件0列的标题以数据开始id标记
-    # if ori_data.columns[0] == "Unnamed: 0":
-    #     ori_data = ori_data.drop(["Unnamed: 0"], axis=1)
+    # Remove spurious column, so that column 0 is now 'admissionid'.
+    if ori_data.columns[0] == "Unnamed: 0":
+        ori_data = ori_data.drop(["Unnamed: 0"], axis=1)
 
     #########################
     # Remove outliers from dataset
     #########################
 
-    no = ori_data.shape[0]
-    # 计算样本中每个值相对于样本均值和标准差的z分数。
     ori_data = ori_data[::-1]
     # Normalize the data
     ori_data = MinMaxScaler(ori_data)
@@ -93,13 +91,11 @@ def data_preprocess(
 
     # Parameters np.unique(),去除其中重复的元素,并按元素由小到大返回一个新的无元素重复的元组或者列表。
     no = len(data)
-    # dim = len(ori_data.columns) - 1
+    dim = len(ori_data.columns) - 1
 
     #########################
     # Impute, scale and pad data
     #########################
-
-    # Initialize scaler
 
     # Imputation values
     if impute_method == "median":
@@ -110,23 +106,21 @@ def data_preprocess(
         raise ValueError("Imputation method should be `median` or `mode`")
 
     # Output initialization
-    output = np.array(data)
-    # output = torch.tensor(output) # Shape:[no, max_seq_len, dim]
-    output.fill(padding_value)
+    # output = np.empty([no, max_seq_len, dim])
+    output = np.array(data)   # Shape:[no, max_seq_len, dim]
+    # output.fill(padding_value)
     time = []
 
     # For each uniq id
     for i in tqdm(range(no)):
         # Extract the time-series data with a certain admissionid
         curr_data = ori_data[ori_data[index] == data[i]].to_numpy()
-        # curr_data = ori_data
 
         # Impute missing data
         curr_data = imputer(curr_data, impute_vals)
 
         # Normalize data
         curr_data = MinMaxScaler(curr_data)
-        # curr_data = torch.tensor(curr_data)
 
         # Extract time and assign to the preprocessed data (Excluding ID)
         curr_no = len(curr_data)

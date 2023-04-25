@@ -57,6 +57,7 @@ def real_data_loading(data_path, seq_len):
     # Normalize the data
     ori_data = MinMaxScaler(ori_data)
 
+
     # Preprocess the dataset
     temp_data = []
     # Cut data by sequence length
@@ -70,14 +71,38 @@ def real_data_loading(data_path, seq_len):
     for i in range(len(temp_data)):
         data.append(temp_data[idx[i]])
 
-    return data
+    no = len(data)
+    output = np.array(data)
+    time = []
+
+    # For each uniq id
+    for i in range(no):
+        # Extract the time-series data with a certain admissionid
+
+        curr_data = data[i]
+
+        # Normalize data
+        curr_data = MinMaxScaler(curr_data)
+
+        # Extract time and assign to the preprocessed data (Excluding ID)
+        curr_no = len(curr_data)
+
+        # Pad data to `max_seq_len`
+        if curr_no >= seq_len:
+            output[i, :, 1:] = curr_data[:seq_len, 1:]  # Shape: [1, max_seq_len, dim]
+            time.append(seq_len)
+        else:
+            output[i, :curr_no, 1:] = curr_data[:, 1:]  # Shape: [1, max_seq_len, dim]
+            time.append(curr_no)
+
+    return output, time
 
 
 def load_data(data_path, max_seq_len):
     # Data loading
-    ori_data = real_data_loading(data_path, max_seq_len)  # list: 3661; [24,6]
+    ori_data, time = real_data_loading(data_path, max_seq_len)  # list: 3661; [24,6]
 
-    return ori_data
+    return ori_data, time
 
 
 def extract_time(data):
