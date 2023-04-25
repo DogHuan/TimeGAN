@@ -18,6 +18,7 @@ Contact: jsyoon0823@gmail.com, e.s.saveliev@gmail.com
 """
 # Local packages
 import os
+import torch
 from typing import Union, Tuple, List
 import warnings
 warnings.filterwarnings("ignore")
@@ -29,25 +30,11 @@ from tqdm import tqdm
 from scipy import stats
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
-def MinMaxScaler(data):
-    """Min Max normalizer.
-
-    Args:
-      - data: original data
-
-    Returns:
-      - norm_data: normalized data
-    """
-    numerator = data - np.min(data, 0)
-    denominator = np.max(data, 0) - np.min(data, 0)
-    norm_data = numerator / (denominator + 1e-7)
-    return norm_data
 def data_preprocess(
     file_name: str,
     max_seq_len: int,
-    # padding_value: float = -1.0,
-    impute_method: str = "mode",
-    scaling_method: str = "minmax",
+    padding_value: float=-1.0,
+    impute_method: str="mode",
 ) -> Tuple[np.ndarray, np.ndarray, List]:
     """Load the data and preprocess into 3d numpy array.
     Preprocessing includes:
@@ -77,36 +64,42 @@ def data_preprocess(
 
     # Load csv
     print("Loading data...\n")
-    ori_data = pd.read_csv(file_name)
-    # ori_data.drop('trade_date', axis=1, inplace=True)  # 删除列’pre_close‘
 
-    # Remove spurious column, so that column 0 is now 'admissionid'.
-    if ori_data.columns[0] == "Unnamed: 0":
-        ori_data = ori_data.drop(["Unnamed: 0"], axis=1)
+    ori_data = pd.read_csv(file_name)
+    # Remove spurious column, so that column 0 is now 'admissionid'. 删除文件0列的标题以数据开始id标记
+    # if ori_data.columns[0] == "Unnamed: 0":
+    #     ori_data = ori_data.drop(["Unnamed: 0"], axis=1)
 
     #########################
     # Remove outliers from dataset
     #########################
 
-    # Parameters
-    uniq_id = ori_data[index]
-    no = len(uniq_id)
-    dim = len(ori_data.columns) - 1
+    no = ori_data.shape[0]
+    # 计算样本中每个值相对于样本均值和标准差的z分数。
+    ori_data = ori_data[::-1]
+    # Normalize the data
+    ori_data = MinMaxScaler(ori_data)
+    temp_data = []
+    # Cut data by sequence length
+    for i in range(0, len(ori_data) - max_seq_len):
+        _x = ori_data[i:i + max_seq_len]
+        temp_data.append(_x)
+
+    # Mix the datasets (to make it similar to i.i.d)
+    idx = np.random.permutation(len(temp_data))
+    data = []
+    for i in range(len(temp_data)):
+        data.append(temp_data[idx[i]])
+
+    # Parameters np.unique(),去除其中重复的元素,并按元素由小到大返回一个新的无元素重复的元组或者列表。
+    no = len(data)
+    # dim = len(ori_data.columns) - 1
 
     #########################
     # Impute, scale and pad data
     #########################
 
     # Initialize scaler
-    if scaling_method == "minmax":
-        scaler = MinMaxScaler()
-        scaler.fit(ori_data)
-        params = [scaler.data_min_, scaler.data_max_]
-
-    elif scaling_method == "standard":
-        scaler = StandardScaler()
-        scaler.fit(ori_data)
-        params = [scaler.mean_, scaler.var_]
 
     # Imputation values
     if impute_method == "median":
@@ -116,34 +109,51 @@ def data_preprocess(
     else:
         raise ValueError("Imputation method should be `median` or `mode`")
 
-    # # Output initialization
-    # output = np.empty([no, max_seq_len, dim])  # Shape:[no, max_seq_len, dim]
+    # Output initialization
+    output = np.array(data)
+    # output = torch.tensor(output) # Shape:[no, max_seq_len, dim]
+    output.fill(padding_value)
     time = []
 
     # For each uniq id
     for i in tqdm(range(no)):
         # Extract the time-series data with a certain admissionid
-
-        curr_data = ori_data[ori_data[index] == uniq_id[i]].to_numpy()
+        curr_data = ori_data[ori_data[index] == data[i]].to_numpy()
+        # curr_data = ori_data
 
         # Impute missing data
         curr_data = imputer(curr_data, impute_vals)
 
         # Normalize data
-        curr_data = scaler.transform(curr_data)
+        curr_data = MinMaxScaler(curr_data)
+        # curr_data = torch.tensor(curr_data)
 
         # Extract time and assign to the preprocessed data (Excluding ID)
         curr_no = len(curr_data)
 
         # Pad data to `max_seq_len`
         if curr_no >= max_seq_len:
-            ori_data[i, :, :] = curr_data[:max_seq_len, 1:]  # Shape: [1, max_seq_len, dim]
+            output[i, :, 1:] = curr_data[:max_seq_len, 1:]  # Shape: [1, max_seq_len, dim]
             time.append(max_seq_len)
         else:
-            ori_data[i, :curr_no, :] = curr_data[:, 1:]  # Shape: [1, max_seq_len, dim]
+            output[i, :curr_no, 1:] = curr_data[:, 1:]  # Shape: [1, max_seq_len, dim]
             time.append(curr_no)
 
-    return ori_data, time, params, max_seq_len
+    return output, time, max_seq_len, padding_value
+
+def MinMaxScaler(data):
+    """Min Max normalizer.
+
+    Args:
+      - data: original data
+
+    Returns:
+      - norm_data: normalized data
+    """
+    numerator = data - np.min(data, 0)
+    denominator = np.max(data, 0) - np.min(data, 0)
+    norm_data = numerator / (denominator + 1e-7)
+    return norm_data
 
 def imputer(
     curr_data: np.ndarray,

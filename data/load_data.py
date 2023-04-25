@@ -73,7 +73,7 @@ def real_data_loading(data_path, seq_len):
     return data
 
 
-def load_data(data_path,max_seq_len):
+def load_data(data_path, max_seq_len):
     # Data loading
     ori_data = real_data_loading(data_path, max_seq_len)  # list: 3661; [24,6]
 

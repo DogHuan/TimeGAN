@@ -83,12 +83,12 @@ def main(args):
     #########################
 
     data_path = "data/ss2.csv"
-    # X, T, _, args.max_seq_len = data_preprocess(
-    #     data_path, args.max_seq_len
-    # )
-    ori_data = load_data(data_path, args.max_seq_len)
-    X = np.array(ori_data)
-    T = extract_time(ori_data)
+    X, T, args.max_seq_len,args.padding_value = data_preprocess(
+        data_path, args.max_seq_len
+    )
+    # ori_data = load_data(data_path, args.max_seq_len)
+    # X = np.array(ori_data)
+    # T = extract_time(ori_data)
 
     print(f"Processed data: {X.shape} (Idx x MaxSeqLen x Features)\n")
     print(f"Original data preview:\n{X[:2, :10, :2]}\n")
@@ -239,7 +239,7 @@ if __name__ == "__main__":
     # Data Arguments
     parser.add_argument(
         '--max_seq_len',
-        default=24,
+        default=100,
         type=int)
     parser.add_argument(
         '--train_rate',
