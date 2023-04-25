@@ -78,4 +78,4 @@ def load_data(data_path, max_seq_len):
     # Data loading
     ori_data, time = real_data_loading(data_path, max_seq_len)  # list: 3661; [24,6]
 
-    return ori_data, time
+    return ori_data[:,:,1:], time

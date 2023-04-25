@@ -32,7 +32,7 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler
 def data_preprocess(
     file_name: str,
     max_seq_len: int,
-    padding_value: float=-1.0,
+    padding_value: float = 0.0,
     impute_method: str="mode",
     scaling_method: str="minmax",
 ) -> Tuple[np.ndarray, np.ndarray, List]:
