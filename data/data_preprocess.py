@@ -117,7 +117,7 @@ def data_preprocess(
 
     # Output initialization
     output = np.empty([no, max_seq_len, dim])  # Shape:[no, max_seq_len, dim]
-    # output.fill(padding_value)
+    output.fill(padding_value)
     time = []
 
     # For each uniq id

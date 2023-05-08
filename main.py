@@ -83,7 +83,7 @@ def main(args):
     #########################
 
     data_path = "data/ss2.csv"
-    X, T, _, args.max_seq_len, args.padding_value= data_preprocess(
+    X, T, _, args.max_seq_len, args.padding_value = data_preprocess(
         data_path, args.max_seq_len
     )
     # ori_data, T = load_data(data_path, args.max_seq_len)
