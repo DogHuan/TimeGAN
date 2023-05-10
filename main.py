@@ -16,6 +16,7 @@ from sklearn.model_selection import train_test_split
 
 from data.data_preprocess import data_preprocess
 from data.load_data import load_data
+from metrics.calculate_accuracy import CalculateAccuracy
 # Self-Written Modules
 
 from metrics.metric_utils import (
@@ -187,6 +188,12 @@ def main(args):
         (generated_data, generated_time),
         (test_data, test_time)
     )
+    # print("Running calculate_accuracy using generated data and original...")
+    # prediction_accuracy = CalculateAccuracy(
+    #     (generated_data, generated_time),
+    #     (test_data, test_time)
+    # )
+    # print("prediction_accuracy", prediction_accuracy)
 
     step_ahead_pred = [ori_step_ahead_pred_perf, new_step_ahead_pred_perf]
 
@@ -195,6 +202,15 @@ def main(args):
           f'(2) New: {str(np.round(new_step_ahead_pred_perf, 4))}\n')
 
     print(f"Total Runtime: {(time.time() - start)/60} mins\n")
+
+    print("Running prediction using generated data and original...")
+    all_data = train_data + generated_data
+    all_data_time = train_time + generated_time
+    prediction_all = one_step_ahead_prediction(
+        (all_data, all_data_time),
+        (test_data, test_time)
+    )
+    print("全部数据预测rmse：", prediction_all)
 
     return None
 
