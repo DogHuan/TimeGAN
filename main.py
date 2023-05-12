@@ -16,8 +16,6 @@ from sklearn.model_selection import train_test_split
 
 from data.data_preprocess import data_preprocess
 from data.load_data import load_data
-from metrics.calculate_accuracy import CalculateAccuracy
-# Self-Written Modules
 
 from metrics.metric_utils import (
     feature_prediction, one_step_ahead_prediction, reidentify_score
@@ -83,11 +81,11 @@ def main(args):
     # Load and preprocess data for model
     #########################
 
-    data_path = "data/ss2.csv"
+    data_path = "data/01SZ_with_tag.csv"
     X, T, _, args.max_seq_len, args.padding_value = data_preprocess(
         data_path, args.max_seq_len
     )
-    # ori_data, T = load_data(data_path, args.max_seq_len)
+    # ori_data, T, padding_value = load_data(data_path, args.max_seq_len)
     # X = np.array(ori_data)
 
     print(f"Processed data: {X.shape} (Idx x MaxSeqLen x Features)\n")
@@ -179,38 +177,41 @@ def main(args):
 
     # 2. One step ahead prediction
     print("Running one step ahead prediction using original data...")
-    ori_step_ahead_pred_perf = one_step_ahead_prediction(
-        (train_data, train_time), 
+    ori_rmse, ori_mse, ori_mae = one_step_ahead_prediction(
+        (train_data, train_time),
         (test_data, test_time)
     )
     print("Running one step ahead prediction using generated data...")
-    new_step_ahead_pred_perf = one_step_ahead_prediction(
+    new_rmse, new_mse, new_mae = one_step_ahead_prediction(
         (generated_data, generated_time),
         (test_data, test_time)
     )
-    # print("Running calculate_accuracy using generated data and original...")
-    # prediction_accuracy = CalculateAccuracy(
-    #     (generated_data, generated_time),
-    #     (test_data, test_time)
-    # )
-    # print("prediction_accuracy", prediction_accuracy)
 
-    step_ahead_pred = [ori_step_ahead_pred_perf, new_step_ahead_pred_perf]
+    # step_ahead_pred = [ori_step_ahead_pred_perf, new_step_ahead_pred_perf]
+
+    # print('One step ahead prediction results:\n' +
+    #       f'(1) Ori: {str(np.round(ori_step_ahead_pred_perf, 4))}\n' +
+    #       f'(2) New: {str(np.round(new_step_ahead_pred_perf, 4))}\n')
 
     print('One step ahead prediction results:\n' +
-          f'(1) Ori: {str(np.round(ori_step_ahead_pred_perf, 4))}\n' +
-          f'(2) New: {str(np.round(new_step_ahead_pred_perf, 4))}\n')
+          f'(1) Ori: {str(np.round(ori_rmse, 4)) + ", " + str(np.round(ori_mse, 4)) + ", " + str(np.round(ori_mae, 4))}\n' +
+          f'(2) New: {str(np.round(new_rmse, 4)) + ", " + str(np.round(new_mse, 4)) + ", "+ str(np.round(new_mae, 4))}\n')
 
     print(f"Total Runtime: {(time.time() - start)/60} mins\n")
 
     print("Running prediction using generated data and original...")
     all_data = train_data + generated_data
     all_data_time = train_time + generated_time
-    prediction_all = one_step_ahead_prediction(
+    all_rmse, all_mse, all_mae = one_step_ahead_prediction(
         (all_data, all_data_time),
         (test_data, test_time)
     )
-    print("全部数据预测rmse：", prediction_all)
+    print("全部数据预测\n",
+          np.round(all_rmse, 4),
+          np.round(all_mse, 4),
+          np.round(all_mae, 4),
+          # np.round(all_mape, 4)
+          )
 
     return None
 

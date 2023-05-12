@@ -21,8 +21,11 @@ def rmse_error(y_true, y_pred):
     idx = (y_true >= 0) * 1
     # Mean squared loss excluding masked labels
     computed_mse = np.sum(idx * ((y_true - y_pred)**2)) / np.sum(idx)
+    computed_mae = np.sum(idx * (abs(y_true - y_pred))) / np.sum(idx)
+    # computed_smape = (np.sum(np.abs((y_true - y_pred) / y_true)) / np.sum(idx)) * 100
+    # computed_smape = (np.sum((np.abs(y_pred - y_true) / ((np.abs(y_true) + np.abs(y_pred)) / 2))) / np.sum(idx)) * 100
     computed_rmse = np.sqrt(computed_mse)
-    return computed_rmse
+    return computed_rmse, computed_mse, computed_mae
 
 def reidentify_score(enlarge_label, pred_label):
     """Return the reidentification score.
@@ -231,7 +234,11 @@ def one_step_ahead_prediction(train_data, test_data):
 
     # Evaluate the trained model
     with torch.no_grad():
-        perf = 0
+        # perf = 0
+        rmse = 0
+        mse = 0
+        mae = 0
+        mape =0
         for test_x, test_t, test_y in test_dataloader:
             test_x = test_x.to(args["device"])
             test_p = model(test_x, test_t).cpu()
@@ -239,6 +246,13 @@ def one_step_ahead_prediction(train_data, test_data):
             test_p = np.reshape(test_p.numpy(), [-1])
             test_y = np.reshape(test_y.numpy(), [-1])
 
-            perf += rmse_error(test_y, test_p)
+            rmse_error_values = rmse_error(test_y, test_p)
+            rmse += rmse_error_values[0]
+            mse += rmse_error_values[1]
+            mae += rmse_error_values[2]
+            # mape += rmse_error_values[3]
 
-    return perf
+            # perf += rmse_error(test_y, test_p)
+            # acc = reidentify_score(test_y, test_p)
+
+    return rmse, mse, mae

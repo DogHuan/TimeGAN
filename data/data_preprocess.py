@@ -25,7 +25,6 @@ warnings.filterwarnings("ignore")
 # 3rd party modules
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
 from scipy import stats
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
@@ -65,7 +64,8 @@ def data_preprocess(
     # Load csv
     print("Loading data...\n")
     ori_data = pd.read_csv(file_name)
-
+    ori_data = ori_data.drop(['ts_date', 'ts_code', 'trade_date'], axis=1)
+    ori_data.insert(0, 'idx', range(len(ori_data)))
     # Remove spurious column, so that column 0 is now 'admissionid'. 删除文件0列的标题以数据开始id标记
     if ori_data.columns[0] == "Unnamed: 0":
         ori_data = ori_data.drop(["Unnamed: 0"], axis=1)
@@ -109,19 +109,13 @@ def data_preprocess(
     else:
         raise ValueError("Imputation method should be `median` or `mode`")
 
-    # TODO: Sanity check for padding value
-    # if np.any(ori_data == padding_value):
-    #     print(f"Padding value `{padding_value}` found in data")
-    #     padding_value = np.nanmin(ori_data.to_numpy()) - 1
-    #     print(f"Changed padding value to: {padding_value}\n")
-
     # Output initialization
     output = np.empty([no, max_seq_len, dim])  # Shape:[no, max_seq_len, dim]
     output.fill(padding_value)
     time = []
 
     # For each uniq id
-    for i in tqdm(range(no)):
+    for i in range(no):
         # Extract the time-series data with a certain admissionid
 
         curr_data = ori_data[ori_data[index] == uniq_id[i]].to_numpy()

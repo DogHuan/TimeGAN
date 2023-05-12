@@ -27,8 +27,7 @@ def real_data_loading(data_path, seq_len):
     Returns:
       - data: preprocessed data.
     """
-    ori_data = np.loadtxt(dirname(dirname(abspath(__file__))) + '/data/ss2.csv', delimiter=",", skiprows=1)
-
+    ori_data = np.loadtxt(dirname(dirname(abspath(__file__))) + '/data/01SZ_with_tag.csv', delimiter=",", skiprows=1)
     # Flip the data to make chronological data
     ori_data = ori_data[::-1]
     # Normalize the data
@@ -77,5 +76,6 @@ def real_data_loading(data_path, seq_len):
 def load_data(data_path, max_seq_len):
     # Data loading
     ori_data, time = real_data_loading(data_path, max_seq_len)  # list: 3661; [24,6]
+    padding_value = 0.0
 
-    return ori_data[:,:,1:], time
+    return ori_data[:, :, 1:], time, padding_value
