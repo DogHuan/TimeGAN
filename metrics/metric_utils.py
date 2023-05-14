@@ -238,7 +238,6 @@ def one_step_ahead_prediction(train_data, test_data):
         rmse = 0
         mse = 0
         mae = 0
-        mape =0
         for test_x, test_t, test_y in test_dataloader:
             test_x = test_x.to(args["device"])
             test_p = model(test_x, test_t).cpu()
@@ -250,9 +249,5 @@ def one_step_ahead_prediction(train_data, test_data):
             rmse += rmse_error_values[0]
             mse += rmse_error_values[1]
             mae += rmse_error_values[2]
-            # mape += rmse_error_values[3]
-
-            # perf += rmse_error(test_y, test_p)
-            # acc = reidentify_score(test_y, test_p)
 
     return rmse, mse, mae

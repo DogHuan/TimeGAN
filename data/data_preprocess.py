@@ -63,10 +63,10 @@ def data_preprocess(
 
     # Load csv
     print("Loading data...\n")
-    ori_data = pd.read_csv(file_name)
+    ori_data = pd.read_csv(file_name, encoding="GBK")
     ori_data = ori_data.drop(['ts_date', 'ts_code', 'trade_date'], axis=1)
     ori_data.insert(0, 'idx', range(len(ori_data)))
-    # Remove spurious column, so that column 0 is now 'admissionid'. 删除文件0列的标题以数据开始id标记
+
     if ori_data.columns[0] == "Unnamed: 0":
         ori_data = ori_data.drop(["Unnamed: 0"], axis=1)
 
@@ -75,13 +75,7 @@ def data_preprocess(
     #########################
 
     no = ori_data.shape[0]
-    # 计算样本中每个值相对于样本均值和标准差的z分数。
-    z_scores = stats.zscore(ori_data, axis=0, nan_policy='omit')
-    z_filter = np.nanmax(np.abs(z_scores), axis=1) < 3
-    ori_data = ori_data[z_filter]
-    print(f"Dropped {no - ori_data.shape[0]} rows (outliers)\n")
 
-    # Parameters np.unique(),去除其中重复的元素,并按元素由小到大返回一个新的无元素重复的元组或者列表。
     uniq_id = np.unique(ori_data[index])
     no = len(uniq_id)
     dim = len(ori_data.columns) - 1

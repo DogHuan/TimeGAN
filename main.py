@@ -1,17 +1,13 @@
 # -*- coding: UTF-8 -*-
-# Local modules
 import argparse
-import logging
 import os
 import pickle
 import random
-import shutil
 import time
 
 # 3rd-Party Modules
 import numpy as np
 import torch
-import joblib
 from sklearn.model_selection import train_test_split
 
 from data.data_preprocess import data_preprocess
@@ -81,7 +77,7 @@ def main(args):
     # Load and preprocess data for model
     #########################
 
-    data_path = "data/01SZ_with_tag.csv"
+    data_path = "data/028SH_with_tag.csv"
     X, T, _, args.max_seq_len, args.padding_value = data_preprocess(
         data_path, args.max_seq_len
     )
@@ -89,7 +85,6 @@ def main(args):
     # X = np.array(ori_data)
 
     print(f"Processed data: {X.shape} (Idx x MaxSeqLen x Features)\n")
-    print(f"Original data preview:\n{X[:2, :10, :2]}\n")
 
     args.feature_dim = X.shape[-1]
     args.Z_dim = X.shape[-1]
@@ -115,7 +110,6 @@ def main(args):
     # Log end time
     end = time.time()
 
-    print(f"Generated data preview:\n{generated_data[:2, -10:, :2]}\n")
     print(f"Model Runtime: {(end - start)/60} mins\n")
 
     #########################
@@ -186,12 +180,6 @@ def main(args):
         (generated_data, generated_time),
         (test_data, test_time)
     )
-
-    # step_ahead_pred = [ori_step_ahead_pred_perf, new_step_ahead_pred_perf]
-
-    # print('One step ahead prediction results:\n' +
-    #       f'(1) Ori: {str(np.round(ori_step_ahead_pred_perf, 4))}\n' +
-    #       f'(2) New: {str(np.round(new_step_ahead_pred_perf, 4))}\n')
 
     print('One step ahead prediction results:\n' +
           f'(1) Ori: {str(np.round(ori_rmse, 4)) + ", " + str(np.round(ori_mse, 4)) + ", " + str(np.round(ori_mae, 4))}\n' +
