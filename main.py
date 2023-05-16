@@ -79,12 +79,12 @@ def main(args):
     # Load and preprocess data for model
     #########################
 
-    data_path = "data/01SZ_with_tag.csv"
-    # X, T, _, args.max_seq_len, args.padding_value = data_preprocess(
-    #     data_path, args.max_seq_len
-    # )
-    ori_data, T = load_data(data_path, args.max_seq_len)
-    X = np.array(ori_data)
+    data_path = "data/028SH_with_tag.csv"
+    X, T, _, args.max_seq_len, args.padding_value = data_preprocess(
+        data_path, args.max_seq_len
+    )
+    # ori_data, T = load_data(data_path, args.max_seq_len)
+    # X = np.array(ori_data)
 
     print(f"Processed data: {X.shape} (Idx x MaxSeqLen x Features)\n")
 
@@ -245,7 +245,7 @@ if __name__ == "__main__":
     # Data Arguments
     parser.add_argument(
         '--max_seq_len',
-        default=100,
+        default=30,
         type=int)
     parser.add_argument(
         '--train_rate',
