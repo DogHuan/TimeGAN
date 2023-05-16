@@ -1,8 +1,9 @@
 # Necessary packages
 import torch
+from matplotlib import pyplot as plt
 from tqdm import tqdm, trange
 import numpy as np
-from sklearn.metrics import accuracy_score, mean_squared_error
+from sklearn.metrics import accuracy_score, mean_squared_error, precision_score, recall_score
 
 from metrics.general_rnn import GeneralRNN
 from metrics.dataset import FeaturePredictionDataset, OneStepPredictionDataset
@@ -22,8 +23,6 @@ def rmse_error(y_true, y_pred):
     # Mean squared loss excluding masked labels
     computed_mse = np.sum(idx * ((y_true - y_pred)**2)) / np.sum(idx)
     computed_mae = np.sum(idx * (abs(y_true - y_pred))) / np.sum(idx)
-    # computed_smape = (np.sum(np.abs((y_true - y_pred) / y_true)) / np.sum(idx)) * 100
-    # computed_smape = (np.sum((np.abs(y_pred - y_true) / ((np.abs(y_true) + np.abs(y_pred)) / 2))) / np.sum(idx)) * 100
     computed_rmse = np.sqrt(computed_mse)
     return computed_rmse, computed_mse, computed_mae
 
@@ -242,12 +241,21 @@ def one_step_ahead_prediction(train_data, test_data):
             test_x = test_x.to(args["device"])
             test_p = model(test_x, test_t).cpu()
 
-            test_p = np.reshape(test_p.numpy(), [-1])
-            test_y = np.reshape(test_y.numpy(), [-1])
+            test_p = np.reshape(test_p[0, :19, 0].numpy(), [-1])
+            test_y = np.reshape(test_y[0, :19, 0].numpy(), [-1])
 
             rmse_error_values = rmse_error(test_y, test_p)
             rmse += rmse_error_values[0]
             mse += rmse_error_values[1]
             mae += rmse_error_values[2]
-
+    predicted_labels = np.round(test_p)
+    true_labels = np.round(test_y)
+    accuracy = accuracy_score(true_labels, predicted_labels)
+    precision = precision_score(true_labels, predicted_labels)
+    recall = recall_score(true_labels, predicted_labels)
+    plt.plot(test_y, label="True Values")
+    plt.plot(test_p, label="Predictions")
+    plt.legend()
+    plt.show()
+    print("a,p,r",accuracy,precision,recall)
     return rmse, mse, mae

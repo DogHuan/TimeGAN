@@ -14,11 +14,13 @@ from data.data_preprocess import data_preprocess
 from data.load_data import load_data
 
 from metrics.metric_utils import (
-    feature_prediction, one_step_ahead_prediction, reidentify_score
+    feature_prediction, one_step_ahead_prediction
 )
 
 from models.timegan import TimeGAN
 from models.utils import timegan_trainer, timegan_generator
+from predict_stocks import predict_stocks
+
 
 def main(args):
     ##############################################
@@ -77,12 +79,12 @@ def main(args):
     # Load and preprocess data for model
     #########################
 
-    data_path = "data/028SH_with_tag.csv"
-    X, T, _, args.max_seq_len, args.padding_value = data_preprocess(
-        data_path, args.max_seq_len
-    )
-    # ori_data, T, padding_value = load_data(data_path, args.max_seq_len)
-    # X = np.array(ori_data)
+    data_path = "data/01SZ_with_tag.csv"
+    # X, T, _, args.max_seq_len, args.padding_value = data_preprocess(
+    #     data_path, args.max_seq_len
+    # )
+    ori_data, T = load_data(data_path, args.max_seq_len)
+    X = np.array(ori_data)
 
     print(f"Processed data: {X.shape} (Idx x MaxSeqLen x Features)\n")
 
@@ -188,7 +190,7 @@ def main(args):
     print(f"Total Runtime: {(time.time() - start)/60} mins\n")
 
     print("Running prediction using generated data and original...")
-    all_data = train_data + generated_data
+    all_data = np.concatenate((train_data, generated_data), axis=0)
     all_data_time = train_time + generated_time
     all_rmse, all_mse, all_mae = one_step_ahead_prediction(
         (all_data, all_data_time),
@@ -247,21 +249,21 @@ if __name__ == "__main__":
         type=int)
     parser.add_argument(
         '--train_rate',
-        default=0.5,
+        default=0.8,
         type=float)
 
     # Model Arguments
     parser.add_argument(
         '--emb_epochs',
-        default=600,
+        default=10,
         type=int)
     parser.add_argument(
         '--sup_epochs',
-        default=600,
+        default=10,
         type=int)
     parser.add_argument(
         '--gan_epochs',
-        default=600,
+        default=10,
         type=int)
     parser.add_argument(
         '--batch_size',

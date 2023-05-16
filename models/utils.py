@@ -25,7 +25,7 @@ def embedding_trainer(
     """The training loop for the embedding and recovery functions
     """  
     logger = trange(args.emb_epochs, desc=f"Epoch: 0, Loss: 0")
-    for epoch in logger:   
+    for epoch in logger:
         for X_mb, T_mb in dataloader:
             # Reset gradients
             model.zero_grad()
