@@ -14,7 +14,7 @@ class GeneralRNN(torch.nn.Module):
         self.dropout = args['dropout']
         self.bidirectional = args['bidirectional']
 
-        self.padding_value = args['padding_value']
+        # self.padding_value = args['padding_value']
         self.max_seq_len = args['max_seq_len']
     
         self.rnn_module = self._get_rnn_module(self.model_type)
@@ -44,9 +44,9 @@ class GeneralRNN(torch.nn.Module):
     def forward(self, X, T):
         # Dynamic RNN input for ignoring paddings
         X_packed = torch.nn.utils.rnn.pack_padded_sequence(
-            input=X, 
-            lengths=T, 
-            batch_first=True, 
+            input=X,
+            lengths=T,
+            batch_first=True,
             enforce_sorted=False
         )
 
@@ -54,9 +54,9 @@ class GeneralRNN(torch.nn.Module):
         
         # Pad RNN output back to sequence length
         H_o, T = torch.nn.utils.rnn.pad_packed_sequence(
-            sequence=H_o, 
+            sequence=H_o,
             batch_first=True,
-            padding_value=self.padding_value,
+            # padding_value=self.padding_value,
             total_length=self.max_seq_len
         )
         

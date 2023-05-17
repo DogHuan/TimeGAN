@@ -71,7 +71,7 @@ def feature_prediction(train_data, test_data, index):
     args["n_layers"] = 3
     args["dropout"] = 0.5
     args["padding_value"] = 0.0
-    args["max_seq_len"] = 30
+    args["max_seq_len"] = 100
     args["learning_rate"] = 1e-3
     args["grad_clip_norm"] = 5.0
 
@@ -180,8 +180,8 @@ def one_step_ahead_prediction(train_data, test_data):
     args["out_dim"] = dim
     args["n_layers"] = 3
     args["dropout"] = 0.5
-    args["padding_value"] = 0.0
-    args["max_seq_len"] = 30-1   # only 99 is used for prediction
+    # args["padding_value"] = 0.0
+    args["max_seq_len"] = 100 - 1  # only 99 is used for prediction
     args["learning_rate"] = 1e-3
     args["grad_clip_norm"] = 5.0
 
@@ -248,13 +248,12 @@ def one_step_ahead_prediction(train_data, test_data):
             rmse += rmse_error_values[0]
             mse += rmse_error_values[1]
             mae += rmse_error_values[2]
-    # predicted_labels = np.round(test_p)
-    # true_labels = np.round(test_y)
+
     # accuracy = accuracy_score(true_labels, predicted_labels)
     # precision = precision_score(true_labels, predicted_labels)
     # recall = recall_score(true_labels, predicted_labels)
-    plt.plot(test_y, label="True Values")
-    plt.plot(test_p, label="Predictions")
-    plt.legend()
-    plt.show()
+    # plt.plot(test_y, label="True Values")
+    # plt.plot(test_p, label="Predictions")
+    # plt.legend()
+    # plt.show()
     return rmse, mse, mae

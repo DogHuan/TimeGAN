@@ -12,15 +12,13 @@ from sklearn.model_selection import train_test_split
 
 from data.data_preprocess import data_preprocess
 from data.load_data import load_data
-
 from metrics.metric_utils import (
     feature_prediction, one_step_ahead_prediction
 )
+from metrics.predict_dataset import stock_predict
 
 from models.timegan import TimeGAN
 from models.utils import timegan_trainer, timegan_generator
-from predict_stocks import predict_stocks
-
 
 def main(args):
     ##############################################
@@ -80,7 +78,7 @@ def main(args):
     #########################
 
     data_path = "data/028SH_with_tag.csv"
-    X, T, _, args.max_seq_len, args.padding_value = data_preprocess(
+    X, T, _, args.max_seq_len, ori_data = data_preprocess(
         data_path, args.max_seq_len
     )
     # ori_data, T = load_data(data_path, args.max_seq_len)
@@ -190,11 +188,11 @@ def main(args):
     print(f"Total Runtime: {(time.time() - start)/60} mins\n")
 
     print("Running prediction using generated data and original...")
-    all_data = np.concatenate((train_data, generated_data), axis=0)
-    all_data_time = train_time + generated_time
-    all_rmse, all_mse, all_mae = one_step_ahead_prediction(
+    all_data = np.concatenate((X[:, :10, :], generated_data[:, :10, :]), axis=0)
+    all_data_time = T + generated_time
+    all_rmse, all_mse, all_mae = stock_predict(
         (all_data, all_data_time),
-        (test_data, test_time)
+        (test_data[:, :10, :], test_time)
     )
     print("全部数据预测\n",
           np.round(all_rmse, 4),
@@ -245,7 +243,7 @@ if __name__ == "__main__":
     # Data Arguments
     parser.add_argument(
         '--max_seq_len',
-        default=30,
+        default=100,
         type=int)
     parser.add_argument(
         '--train_rate',
