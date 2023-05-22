@@ -77,8 +77,8 @@ def main(args):
     # Load and preprocess data for model
     #########################
 
-    data_path = "data/028SH_with_tag.csv"
-    X, T, _, args.max_seq_len, ori_data = data_preprocess(
+    data_path = "data/600028.SH.csv"
+    X, T, _, args.max_seq_len, args.padding_value = data_preprocess(
         data_path, args.max_seq_len
     )
     # ori_data, T = load_data(data_path, args.max_seq_len)
@@ -200,7 +200,18 @@ def main(args):
           np.round(all_mae, 4),
           # np.round(all_mape, 4)
           )
-
+    all_data_2 = np.concatenate((X, generated_data), axis=0)
+    all_data_time_2 = T + generated_time
+    all_rmse_2, all_mse_2, all_mae_2 = one_step_ahead_prediction(
+        (all_data_2, all_data_time_2),
+        (test_data, test_time)
+    )
+    print("全部数据预测_2\n",
+          np.round(all_rmse_2, 4),
+          np.round(all_mse_2, 4),
+          np.round(all_mae_2, 4),
+          # np.round(all_mape, 4)
+          )
     return None
 
 def str2bool(v):
@@ -253,15 +264,15 @@ if __name__ == "__main__":
     # Model Arguments
     parser.add_argument(
         '--emb_epochs',
-        default=10,
+        default=600,
         type=int)
     parser.add_argument(
         '--sup_epochs',
-        default=10,
+        default=600,
         type=int)
     parser.add_argument(
         '--gan_epochs',
-        default=10,
+        default=600,
         type=int)
     parser.add_argument(
         '--batch_size',

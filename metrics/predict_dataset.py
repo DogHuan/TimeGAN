@@ -20,9 +20,9 @@ def stock_predict(train_data, test_data):
     args = {}
     args["device"] = "cuda" if torch.cuda.is_available() else "cpu"
     args["task"] = "regression"
-    args["model_type"] = "gru"
+    args["model_type"] = "lstm"
     args["bidirectional"] = False
-    args["epochs"] = 20
+    args["epochs"] = 10
     args["batch_size"] = 128
     args["in_dim"] = train_data.shape[2]
     args["h_dim"] = train_data.shape[2]

@@ -12,7 +12,7 @@ class EmbeddingNetwork(torch.nn.Module):
         self.feature_dim = args.feature_dim
         self.hidden_dim = args.hidden_dim
         self.num_layers = args.num_layers
-        # self.padding_value = args.padding_value
+        self.padding_value = args.padding_value
         self.max_seq_len = args.max_seq_len
 
         # Embedder Architecture
@@ -69,7 +69,7 @@ class EmbeddingNetwork(torch.nn.Module):
         H_o, T = torch.nn.utils.rnn.pad_packed_sequence(
             sequence=H_o, 
             batch_first=True,
-            # padding_value=self.padding_value,
+            padding_value=self.padding_value,
             total_length=self.max_seq_len
         )
         
@@ -87,7 +87,7 @@ class RecoveryNetwork(torch.nn.Module):
         self.hidden_dim = args.hidden_dim
         self.feature_dim = args.feature_dim
         self.num_layers = args.num_layers
-        # self.padding_value = args.padding_value
+        self.padding_value = args.padding_value
         self.max_seq_len = args.max_seq_len
 
         # Recovery Architecture
@@ -143,7 +143,7 @@ class RecoveryNetwork(torch.nn.Module):
         H_o, T = torch.nn.utils.rnn.pad_packed_sequence(
             sequence=H_o, 
             batch_first=True,
-            # padding_value=self.padding_value,
+            padding_value=self.padding_value,
             total_length=self.max_seq_len
         )
 
@@ -158,7 +158,7 @@ class SupervisorNetwork(torch.nn.Module):
         super(SupervisorNetwork, self).__init__()
         self.hidden_dim = args.hidden_dim
         self.num_layers = args.num_layers
-        # self.padding_value = args.padding_value
+        self.padding_value = args.padding_value
         self.max_seq_len = args.max_seq_len
 
         # Supervisor Architecture
@@ -215,7 +215,7 @@ class SupervisorNetwork(torch.nn.Module):
         H_o, T = torch.nn.utils.rnn.pad_packed_sequence(
             sequence=H_o, 
             batch_first=True,
-            # padding_value=self.padding_value,
+            padding_value=self.padding_value,
             total_length=self.max_seq_len
         )
 
@@ -233,7 +233,7 @@ class GeneratorNetwork(torch.nn.Module):
         self.Z_dim = args.Z_dim
         self.hidden_dim = args.hidden_dim
         self.num_layers = args.num_layers
-        # self.padding_value = args.padding_value
+        self.padding_value = args.padding_value
         self.max_seq_len = args.max_seq_len
 
         # Generator Architecture
@@ -290,7 +290,7 @@ class GeneratorNetwork(torch.nn.Module):
         H_o, T = torch.nn.utils.rnn.pad_packed_sequence(
             sequence=H_o, 
             batch_first=True,
-            # padding_value=self.padding_value,
+            padding_value=self.padding_value,
             total_length=self.max_seq_len
         )
 
@@ -307,7 +307,7 @@ class DiscriminatorNetwork(torch.nn.Module):
         super(DiscriminatorNetwork, self).__init__()
         self.hidden_dim = args.hidden_dim
         self.num_layers = args.num_layers
-        # self.padding_value = args.padding_value
+        self.padding_value = args.padding_value
         self.max_seq_len = args.max_seq_len
         self.batch_size = args.batch_size
 

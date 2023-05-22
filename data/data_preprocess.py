@@ -31,7 +31,7 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler
 def data_preprocess(
     file_name: str,
     max_seq_len: int,
-    # padding_value: float = 0.0,
+    padding_value: float = 0.0,
     impute_method: str="mode",
     scaling_method: str="minmax",
 ) -> Tuple[np.ndarray, np.ndarray, List]:
@@ -131,7 +131,7 @@ def data_preprocess(
             output[i, :curr_no, :] = curr_data[:, 1:]  # Shape: [1, max_seq_len, dim]
             time.append(curr_no)
 
-    return output, time, params, max_seq_len, ori_data
+    return output, time, params, max_seq_len, padding_value
 
 def imputer(
     curr_data: np.ndarray,
