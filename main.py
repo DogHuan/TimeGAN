@@ -91,7 +91,7 @@ def main(args):
 
     # Train-Test Split data and time
     train_data, test_data, train_time, test_time = train_test_split(
-        X, T, test_size=args.train_rate, random_state=args.seed
+        X, T, train_size=args.train_rate, random_state=args.seed
     )
 
     #########################
